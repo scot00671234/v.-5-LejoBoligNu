@@ -102,8 +102,13 @@ The application uses a relational database with the following core entities:
 
 ## Changelog
 
-Changelog:
-- June 22, 2025. Initial setup
+- June 23, 2025: VPS deployment preparation completed
+  - Added complete environment variable configuration
+  - Implemented PM2 and Nginx configuration files
+  - Created automated deployment scripts
+  - Enhanced security with production JWT handling
+  - Added comprehensive deployment documentation
+- June 22, 2025: Initial setup
 
 ## User Preferences
 
