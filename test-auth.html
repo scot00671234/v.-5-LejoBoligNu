@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Auth Test</title>
+</head>
+<body>
+    <h1>Authentication Debug</h1>
+    <div id="output"></div>
+    
+    <script>
+        const output = document.getElementById('output');
+        
+        function log(message) {
+            output.innerHTML += '<p>' + JSON.stringify(message) + '</p>';
+        }
+        
+        log('Token: ' + localStorage.getItem('auth_token'));
+        log('User: ' + localStorage.getItem('auth_user'));
+        
+        // Test auth endpoint
+        fetch('/api/auth/me', {
+            headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('auth_token')
+            }
+        })
+        .then(response => response.json())
+        .then(data => log('Auth endpoint response: ' + JSON.stringify(data)))
+        .catch(error => log('Auth endpoint error: ' + error.message));
+    </script>
+</body>
+</html>

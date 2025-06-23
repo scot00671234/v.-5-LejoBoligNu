@@ -19,6 +19,9 @@ export default function Navbar() {
     return name.split(' ').map(n => n[0]).join('').toUpperCase();
   };
 
+  // Debug logging
+  console.log('Navbar render - isAuthenticated:', isAuthenticated, 'user:', user);
+
   return (
     <nav className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
       <div className="container mx-auto px-4">

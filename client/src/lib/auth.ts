@@ -17,13 +17,16 @@ class AuthService {
   private user: User | null = null;
 
   constructor() {
-    this.token = localStorage.getItem('auth_token');
-    const userData = localStorage.getItem('auth_user');
-    if (userData) {
-      try {
-        this.user = JSON.parse(userData);
-      } catch {
-        this.user = null;
+    // Only access localStorage if we're in the browser
+    if (typeof window !== 'undefined') {
+      this.token = localStorage.getItem('auth_token');
+      const userData = localStorage.getItem('auth_user');
+      if (userData) {
+        try {
+          this.user = JSON.parse(userData);
+        } catch {
+          this.user = null;
+        }
       }
     }
   }
@@ -48,19 +51,12 @@ class AuthService {
     if (!this.token) return null;
     
     try {
-      const response = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${this.token}` },
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        this.logout();
-        return null;
-      }
-      
+      const response = await apiRequest('GET', '/api/auth/me');
       const data = await response.json();
       this.user = data.user;
-      localStorage.setItem('auth_user', JSON.stringify(this.user));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_user', JSON.stringify(this.user));
+      }
       return this.user;
     } catch {
       this.logout();
@@ -71,15 +67,19 @@ class AuthService {
   private setAuth(token: string, user: User) {
     this.token = token;
     this.user = user;
-    localStorage.setItem('auth_token', token);
-    localStorage.setItem('auth_user', JSON.stringify(user));
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('auth_token', token);
+      localStorage.setItem('auth_user', JSON.stringify(user));
+    }
   }
 
   logout() {
     this.token = null;
     this.user = null;
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('auth_user');
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('auth_token');
+      localStorage.removeItem('auth_user');
+    }
   }
 
   getToken(): string | null {

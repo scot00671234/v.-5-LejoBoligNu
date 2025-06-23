@@ -2,17 +2,36 @@ import { useState, useEffect } from 'react';
 import { authService, type User } from '@/lib/auth';
 
 export function useAuth() {
-  const [user, setUser] = useState<User | null>(authService.getUser());
-  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const initAuth = async () => {
-      if (authService.isAuthenticated()) {
-        setIsLoading(true);
-        const currentUser = await authService.getCurrentUser();
-        setUser(currentUser);
-        setIsLoading(false);
+      setIsLoading(true);
+      
+      // First try to get user from authService
+      const storedUser = authService.getUser();
+      console.log('Stored user from authService:', storedUser);
+      
+      if (storedUser && authService.isAuthenticated()) {
+        setUser(storedUser);
+        
+        // Validate with server in background
+        try {
+          const currentUser = await authService.getCurrentUser();
+          if (currentUser) {
+            setUser(currentUser);
+          }
+        } catch (error) {
+          console.error('Auth validation failed:', error);
+          authService.logout();
+          setUser(null);
+        }
+      } else {
+        setUser(null);
       }
+      
+      setIsLoading(false);
     };
 
     initAuth();
