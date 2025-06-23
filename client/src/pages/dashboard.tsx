@@ -468,16 +468,30 @@ export default function Dashboard() {
         </TabsContent>
 
         <TabsContent value="messages">
-          <Card>
-            <CardContent className="pt-6 text-center">
-              <MessageCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">Beskedfunktion kommer snart</h3>
-              <p className="text-gray-600">Vi arbejder på at færdiggøre beskedsystemet.</p>
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-semibold">Mine beskeder</h2>
               <Link href="/messages">
-                <Button className="mt-4">Se beskeder</Button>
+                <Button className="bg-danish-blue hover:bg-blue-700">
+                  <MessageCircle className="h-4 w-4 mr-2" />
+                  Åbn alle beskeder
+                </Button>
               </Link>
-            </CardContent>
-          </Card>
+            </div>
+            
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-gray-600 mb-4">
+                  Se og administrer alle dine beskeder fra lejere direkte i beskedsystemet.
+                </p>
+                <Link href="/messages">
+                  <Button className="bg-danish-blue hover:bg-blue-700">
+                    Gå til beskeder
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

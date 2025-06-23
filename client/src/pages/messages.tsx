@@ -1,17 +1,28 @@
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { useAuth } from '@/hooks/use-auth';
-import { MessageCircle, Mail } from 'lucide-react';
+import { MessageCircle, Mail, User } from 'lucide-react';
 import { Link } from 'wouter';
-import type { Message } from '@shared/schema';
+
+interface Conversation {
+  otherUserId: number;
+  otherUserName: string;
+  lastMessage: string;
+  lastMessageTime: Date;
+  unreadCount: number;
+  propertyId?: number;
+  propertyTitle?: string;
+}
 
 export default function Messages() {
   const { user, isAuthenticated } = useAuth();
 
-  const { data: messages, isLoading } = useQuery({
-    queryKey: ['/api/messages'],
+  const { data: conversations, isLoading } = useQuery<Conversation[]>({
+    queryKey: ['/api/conversations'],
     enabled: isAuthenticated,
+    refetchInterval: 10000, // Refresh every 10 seconds
   });
 
   if (!isAuthenticated) {
@@ -49,7 +60,7 @@ export default function Messages() {
             </Card>
           ))}
         </div>
-      ) : messages?.length === 0 ? (
+      ) : !conversations || conversations.length === 0 ? (
         <Card>
           <CardContent className="pt-6 text-center">
             <Mail className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -69,35 +80,48 @@ export default function Messages() {
         </Card>
       ) : (
         <div className="space-y-4">
-          {messages?.map((message: Message) => (
-            <Card key={message.id}>
-              <CardHeader className="pb-3">
-                <div className="flex justify-between items-start">
-                  <CardTitle className="text-lg">
-                    {message.fromUserId === user?.id ? 'Til: ' : 'Fra: '}
-                    Bruger {message.fromUserId === user?.id ? message.toUserId : message.fromUserId}
-                  </CardTitle>
-                  <div className="text-sm text-gray-500">
-                    {new Date(message.createdAt!).toLocaleDateString('da-DK', {
-                      day: 'numeric',
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
+          {conversations.map((conversation) => (
+            <Link key={conversation.otherUserId} href={`/messages/${conversation.otherUserId}`}>
+              <Card className="hover:shadow-md transition-shadow cursor-pointer">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <div className="w-12 h-12 bg-danish-blue rounded-full flex items-center justify-center">
+                        <User className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold text-gray-900 truncate">
+                            {conversation.otherUserName}
+                          </h3>
+                          {conversation.unreadCount > 0 && (
+                            <Badge variant="destructive" className="text-xs">
+                              {conversation.unreadCount}
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-gray-600 text-sm truncate mb-1">
+                          {conversation.lastMessage}
+                        </p>
+                        {conversation.propertyTitle && (
+                          <p className="text-danish-blue text-xs truncate">
+                            Vedrørende: {conversation.propertyTitle}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-xs text-gray-500 whitespace-nowrap ml-4">
+                      {new Date(conversation.lastMessageTime).toLocaleDateString('da-DK', {
+                        day: 'numeric',
+                        month: 'short',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-700">{message.content}</p>
-                {message.propertyId && (
-                  <Link href={`/properties/${message.propertyId}`} className="inline-block mt-3">
-                    <Button variant="outline" size="sm">
-                      Se bolig
-                    </Button>
-                  </Link>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

@@ -12,6 +12,7 @@ import Properties from "@/pages/properties";
 import PropertyDetail from "@/pages/property-detail";
 import Dashboard from "@/pages/dashboard";
 import Messages from "@/pages/messages";
+import Conversation from "@/pages/conversation";
 import Profile from "@/pages/profile";
 import NotFound from "@/pages/not-found";
 
@@ -28,6 +29,7 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/dashboard/:section?" component={Dashboard} />
         <Route path="/messages" component={Messages} />
+        <Route path="/messages/:otherUserId" component={Conversation} />
         <Route path="/profile" component={Profile} />
         <Route path="/favorites" component={Properties} />
         <Route component={NotFound} />

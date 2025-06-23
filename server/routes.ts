@@ -255,6 +255,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/conversations", authenticateToken, async (req: any, res) => {
+    try {
+      const conversations = await storage.getConversations(req.user.id);
+      res.json(conversations);
+    } catch (error) {
+      console.error("Get conversations error:", error);
+      res.status(500).json({ message: "Failed to fetch conversations" });
+    }
+  });
+
+  app.put("/api/conversations/:otherUserId/read", authenticateToken, async (req: any, res) => {
+    try {
+      const otherUserId = parseInt(req.params.otherUserId);
+      await storage.markConversationAsRead(req.user.id, otherUserId);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Mark conversation as read error:", error);
+      res.status(500).json({ message: "Failed to mark conversation as read" });
+    }
+  });
+
   app.post("/api/messages", authenticateToken, async (req: any, res) => {
     try {
       const messageData = insertMessageSchema.parse({
