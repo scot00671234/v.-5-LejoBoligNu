@@ -1,6 +1,6 @@
 import { useParams } from 'wouter';
 import { useQuery, useMutation } from '@tanstack/react-query';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { ArrowLeft, Heart, MessageCircle, Bed, Maximize, Calendar, MapPin, Euro } from 'lucide-react';
 import { Link } from 'wouter';
+import PropertyMap from '@/components/property-map';
 import type { Property } from '@shared/schema';
 
 export default function PropertyDetail() {
@@ -20,19 +21,22 @@ export default function PropertyDetail() {
   const [message, setMessage] = useState('');
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const { data: property, isLoading } = useQuery({
+  const { data: property, isLoading } = useQuery<Property>({
     queryKey: [`/api/properties/${id}`],
     enabled: !!id,
   });
 
   // Check if property is favorite
-  useQuery({
+  const { data: favorites } = useQuery({
     queryKey: ['/api/favorites'],
     enabled: isAuthenticated && user?.role === 'tenant' && !!property,
-    onSuccess: (favorites: any[]) => {
-      setIsFavorite(favorites.some(f => f.property.id === property?.id));
-    },
   });
+
+  useEffect(() => {
+    if (favorites && property) {
+      setIsFavorite(favorites.some((f: any) => f.property.id === property.id));
+    }
+  }, [favorites, property]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (content: string) => {
@@ -295,6 +299,17 @@ export default function PropertyDetail() {
               </CardContent>
             </Card>
           )}
+
+          {/* Map Section */}
+          <Card>
+            <CardContent className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                <MapPin className="h-5 w-5 inline mr-2" />
+                Lokation
+              </h3>
+              <PropertyMap property={property} />
+            </CardContent>
+          </Card>
 
           {!isAuthenticated && (
             <Card>

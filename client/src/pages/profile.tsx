@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,7 @@ import { Link } from 'wouter';
 
 const profileFormSchema = z.object({
   name: z.string().min(1, 'Navn er påkrævet'),
+  phone: z.string().optional(),
   bio: z.string().max(500, 'Biografi må maksimalt være 500 tegn').optional(),
   profilePictureUrl: z.string().optional(),
 });
@@ -32,6 +33,7 @@ export default function Profile() {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       name: user?.name || '',
+      phone: '',
       bio: '',
       profilePictureUrl: '',
     },
@@ -43,16 +45,19 @@ export default function Profile() {
   });
 
   // Update form when profile data loads
-  if (profile && !isLoading) {
-    const userData = (profile as any)?.user || profile;
-    if (userData) {
-      form.reset({
-        name: userData.name || '',
-        bio: userData.bio || '',
-        profilePictureUrl: userData.profilePictureUrl || '',
-      });
+  useEffect(() => {
+    if (profile && !isLoading) {
+      const userData = (profile as any)?.user || profile;
+      if (userData) {
+        form.reset({
+          name: userData.name || '',
+          bio: userData.bio || '',
+          profilePictureUrl: userData.profilePictureUrl || '',
+          phone: userData.phone || '',
+        });
+      }
     }
-  }
+  }, [profile, isLoading, form]);
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormData) => {
@@ -225,6 +230,19 @@ export default function Profile() {
                     />
                     {form.formState.errors.name && (
                       <p className="text-sm text-red-600">{form.formState.errors.name.message}</p>
+                    )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Telefonnummer (valgfrit)</Label>
+                    <Input
+                      id="phone"
+                      {...form.register('phone')}
+                      placeholder="f.eks. +45 12 34 56 78"
+                      type="tel"
+                    />
+                    {form.formState.errors.phone && (
+                      <p className="text-sm text-red-600">{form.formState.errors.phone.message}</p>
                     )}
                   </div>
 
