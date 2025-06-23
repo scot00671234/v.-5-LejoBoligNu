@@ -99,18 +99,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: req.user.role,
         profilePictureUrl: req.user.profilePictureUrl,
         bio: req.user.bio,
+        phone: req.user.phone,
       },
     });
   });
 
   app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
     try {
-      const { name, bio, profilePictureUrl } = req.body;
+      const { name, bio, profilePictureUrl, phone } = req.body;
       
       const updatedUser = await storage.updateUser(req.user.id, {
         name,
         bio,
         profilePictureUrl,
+        phone,
       });
 
       res.json({
@@ -121,6 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: updatedUser.role,
           profilePictureUrl: updatedUser.profilePictureUrl,
           bio: updatedUser.bio,
+          phone: updatedUser.phone,
         },
       });
     } catch (error) {
@@ -307,6 +310,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Remove favorite error:", error);
       res.status(500).json({ message: "Failed to remove favorite" });
+    }
+  });
+
+  // User info route for getting landlord details
+  app.get("/api/users/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      const user = await storage.getUser(id);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Return only public user information
+      res.json({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        role: user.role,
+        profilePictureUrl: user.profilePictureUrl,
+        bio: user.bio,
+      });
+    } catch (error) {
+      console.error("Get user error:", error);
+      res.status(500).json({ message: "Failed to fetch user" });
     }
   });
 

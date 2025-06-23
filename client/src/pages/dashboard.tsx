@@ -38,7 +38,7 @@ export default function Dashboard() {
   const [editingProperty, setEditingProperty] = useState<Property | null>(null);
 
   const isCreateSection = section === 'create-property';
-  const activeTab = isCreateSection ? 'create' : 'properties';
+  const [activeTab, setActiveTab] = useState(isCreateSection ? 'create' : 'properties');
 
   const { data: myProperties, isLoading, refetch } = useQuery<Property[]>({
     queryKey: ['/api/properties', { landlordId: user?.id }],
@@ -211,7 +211,7 @@ export default function Dashboard() {
         <p className="text-gray-600">Administrer dine boligannoncer</p>
       </div>
 
-      <Tabs value={activeTab} className="space-y-6">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
         <TabsList>
           <TabsTrigger value="properties">Mine boliger</TabsTrigger>
           <TabsTrigger value="create">Opret ny bolig</TabsTrigger>
