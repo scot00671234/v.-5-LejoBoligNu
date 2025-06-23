@@ -51,11 +51,11 @@ export default function ImageUpload({
           continue;
         }
         
-        // Validate file size (max 5MB)
-        if (file.size > 5 * 1024 * 1024) {
+        // Validate file size (max 10MB before compression)
+        if (file.size > 10 * 1024 * 1024) {
           toast({
             title: "Fil for stor",
-            description: "Billeder må maksimalt være 5MB",
+            description: "Billeder må maksimalt være 10MB",
             variant: "destructive",
           });
           continue;
@@ -90,10 +90,45 @@ export default function ImageUpload({
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      img.onload = () => {
+        // Beregn nye dimensioner (max 800px bredde)
+        const maxWidth = 800;
+        const maxHeight = 600;
+        let { width, height } = img;
+        
+        if (width > maxWidth) {
+          height = (height * maxWidth) / width;
+          width = maxWidth;
+        }
+        
+        if (height > maxHeight) {
+          width = (width * maxHeight) / height;
+          height = maxHeight;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        
+        // Tegn billede på canvas
+        ctx?.drawImage(img, 0, 0, width, height);
+        
+        // Konverter til base64 med komprimering
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+        resolve(compressedBase64);
+      };
+      
+      img.onerror = () => reject(new Error('Kunne ikke indlæse billede'));
+      
       const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result as string);
+      reader.onload = (e) => {
+        img.src = e.target?.result as string;
+      };
       reader.onerror = error => reject(error);
+      reader.readAsDataURL(file);
     });
   };
 
