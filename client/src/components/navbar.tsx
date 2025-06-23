@@ -52,18 +52,42 @@ export default function Navbar() {
           
           <div className="flex items-center space-x-4">
             {!isAuthenticated ? (
-              <div className="hidden md:flex items-center space-x-3">
-                <Link href="/login">
-                  <Button variant="ghost" className="text-gray-700 hover:text-danish-blue">
-                    Log ind
-                  </Button>
-                </Link>
-                <Link href="/register">
-                  <Button className="bg-danish-blue text-white hover:bg-blue-700">
-                    Opret konto
-                  </Button>
-                </Link>
-              </div>
+              <>
+                <div className="hidden md:flex items-center space-x-3">
+                  <Link href="/login">
+                    <Button variant="ghost" className="text-gray-700 hover:text-danish-blue">
+                      Log ind
+                    </Button>
+                  </Link>
+                  <Link href="/register">
+                    <Button className="bg-danish-blue text-white hover:bg-blue-700">
+                      Opret konto
+                    </Button>
+                  </Link>
+                </div>
+                {/* Mobile menu for non-authenticated users */}
+                <div className="md:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" size="sm">
+                        <User className="h-5 w-5" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem asChild>
+                        <Link href="/login" className="flex items-center cursor-pointer">
+                          Log ind
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/register" className="flex items-center cursor-pointer">
+                          Opret konto
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </>
             ) : (
               <div className="flex items-center space-x-4">
                 <Link href="/messages">

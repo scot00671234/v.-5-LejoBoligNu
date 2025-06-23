@@ -249,19 +249,17 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : !myProperties || myProperties.length === 0 ? (
-              <Card>
-                <CardContent className="pt-6 text-center">
-                  <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold mb-2">Ingen boliger endnu</h3>
-                  <p className="text-gray-600 mb-4">Opret din første boligannonce for at komme i gang.</p>
-                  <Link href="/dashboard/create-property">
-                    <Button className="bg-danish-blue hover:bg-blue-700">
-                      <Plus className="h-4 w-4 mr-2" />
-                      Opret bolig
-                    </Button>
-                  </Link>
-                </CardContent>
-              </Card>
+              <div className="text-center py-12">
+                <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Ingen boliger endnu</h3>
+                <p className="text-gray-600 mb-6">Opret din første boligannonce for at komme i gang.</p>
+                <Link href="/dashboard/create-property">
+                  <Button className="bg-danish-blue hover:bg-blue-700 text-white">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Opret bolig
+                  </Button>
+                </Link>
+              </div>
             ) : (
               <div className="grid gap-4">
                 {(myProperties || []).map((property: Property) => (

@@ -74,7 +74,11 @@ export default function PropertyDetail() {
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageData: { recipientId: number; message: string; propertyId: number }) => {
-      return apiRequest('POST', '/api/messages', messageData);
+      return apiRequest('POST', '/api/messages', {
+        toUserId: messageData.recipientId,
+        content: messageData.message,
+        propertyId: messageData.propertyId
+      });
     },
     onSuccess: () => {
       toast({
