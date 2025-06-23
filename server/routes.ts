@@ -6,7 +6,12 @@ import jwt from "jsonwebtoken";
 import { insertUserSchema, insertPropertySchema, insertMessageSchema, insertFavoriteSchema } from "@shared/schema";
 import { z } from "zod";
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key";
+const JWT_SECRET = process.env.JWT_SECRET || (() => {
+  if (process.env.NODE_ENV === 'production') {
+    throw new Error("JWT_SECRET environment variable is required in production. Please check your .env file.");
+  }
+  return "dev-secret-key-change-in-production";
+})();
 
 // Middleware to verify JWT token
 const authenticateToken = async (req: any, res: any, next: any) => {
