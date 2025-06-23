@@ -169,10 +169,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Only landlords can create properties" });
       }
 
-      const propertyData = insertPropertySchema.parse({
-        ...req.body,
-        landlordId: req.user.id,
-      });
+      const requestData = { ...req.body, landlordId: req.user.id };
+      
+      // Convert availableFrom string to Date if provided
+      if (requestData.availableFrom && typeof requestData.availableFrom === 'string') {
+        requestData.availableFrom = new Date(requestData.availableFrom);
+      }
+      
+      const propertyData = insertPropertySchema.parse(requestData);
 
       const property = await storage.createProperty(propertyData);
       res.json(property);
@@ -195,7 +199,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Not authorized to update this property" });
       }
 
-      const updateData = insertPropertySchema.partial().parse(req.body);
+      const requestData = { ...req.body };
+      
+      // Convert availableFrom string to Date if provided
+      if (requestData.availableFrom && typeof requestData.availableFrom === 'string') {
+        requestData.availableFrom = new Date(requestData.availableFrom);
+      }
+      
+      const updateData = insertPropertySchema.partial().parse(requestData);
       const updatedProperty = await storage.updateProperty(id, updateData);
 
       res.json(updatedProperty);
