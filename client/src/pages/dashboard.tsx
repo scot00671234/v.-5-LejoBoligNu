@@ -17,12 +17,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { insertPropertySchema } from '@shared/schema';
 import { Plus, Edit, Trash2, Eye, Home, MessageCircle } from 'lucide-react';
 import { Link } from 'wouter';
+import ImageUpload from '@/components/image-upload';
 import type { Property } from '@shared/schema';
 import { z } from 'zod';
 
 const propertyFormSchema = insertPropertySchema.extend({
   price: z.string().min(1, 'Pris er påkrævet'),
   availableFrom: z.string().optional(),
+  postalCode: z.string().optional(),
+  city: z.string().optional(),
+  country: z.string().default('Denmark'),
 });
 
 type PropertyFormData = z.infer<typeof propertyFormSchema>;
@@ -36,7 +40,7 @@ export default function Dashboard() {
   const isCreateSection = section === 'create-property';
   const activeTab = isCreateSection ? 'create' : 'properties';
 
-  const { data: myProperties, isLoading, refetch } = useQuery({
+  const { data: myProperties, isLoading, refetch } = useQuery<Property[]>({
     queryKey: ['/api/properties', { landlordId: user?.id }],
     enabled: isAuthenticated && user?.role === 'landlord',
   });
@@ -47,6 +51,9 @@ export default function Dashboard() {
       title: '',
       description: '',
       address: '',
+      postalCode: '',
+      city: '',
+      country: 'Denmark',
       price: '',
       rooms: 1,
       size: 50,
@@ -146,10 +153,13 @@ export default function Dashboard() {
       title: property.title,
       description: property.description,
       address: property.address,
+      postalCode: property.postalCode || '',
+      city: property.city || '',
+      country: property.country || 'Denmark',
       price: property.price,
       rooms: property.rooms,
       size: property.size,
-      available: property.available || false,
+      available: property.available ?? false,
       availableFrom: property.availableFrom ? 
         new Date(property.availableFrom).toISOString().split('T')[0] : '',
       images: property.images || [],
@@ -238,7 +248,7 @@ export default function Dashboard() {
                   </Card>
                 ))}
               </div>
-            ) : myProperties?.length === 0 ? (
+            ) : !myProperties || myProperties.length === 0 ? (
               <Card>
                 <CardContent className="pt-6 text-center">
                   <Home className="h-16 w-16 text-gray-400 mx-auto mb-4" />
@@ -254,7 +264,7 @@ export default function Dashboard() {
               </Card>
             ) : (
               <div className="grid gap-4">
-                {myProperties?.map((property: Property) => (
+                {(myProperties || []).map((property: Property) => (
                   <Card key={property.id}>
                     <CardContent className="p-6">
                       <div className="flex justify-between items-start mb-4">
@@ -334,11 +344,29 @@ export default function Dashboard() {
                     <Input
                       id="address"
                       {...form.register('address')}
-                      placeholder="F.eks. Nørrebrogade 123, 2200 København N"
+                      placeholder="F.eks. Nørrebrogade 123"
                     />
                     {form.formState.errors.address && (
                       <p className="text-sm text-red-600">{form.formState.errors.address.message}</p>
                     )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="postalCode">Postnummer</Label>
+                    <Input
+                      id="postalCode"
+                      {...form.register('postalCode')}
+                      placeholder="F.eks. 2200"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city">By</Label>
+                    <Input
+                      id="city"
+                      {...form.register('city')}
+                      placeholder="F.eks. København N"
+                    />
                   </div>
 
                   <div className="space-y-2">
@@ -403,10 +431,19 @@ export default function Dashboard() {
                   )}
                 </div>
 
+                <div className="space-y-2">
+                  <Label>Billeder</Label>
+                  <ImageUpload
+                    images={form.watch('images') || []}
+                    onImagesChange={(images) => form.setValue('images', images)}
+                    maxImages={10}
+                  />
+                </div>
+
                 <div className="flex items-center space-x-2">
                   <Checkbox
                     id="available"
-                    checked={form.watch('available')}
+                    checked={Boolean(form.watch('available'))}
                     onCheckedChange={(checked) => form.setValue('available', checked as boolean)}
                   />
                   <Label htmlFor="available">Boligen er ledig</Label>

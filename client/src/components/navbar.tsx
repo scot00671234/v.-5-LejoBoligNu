@@ -94,8 +94,14 @@ export default function Navbar() {
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
                     <DropdownMenuItem asChild>
-                      <Link href="/dashboard" className="flex items-center cursor-pointer">
+                      <Link href="/profile" className="flex items-center cursor-pointer">
                         <User className="h-4 w-4 mr-2" />
+                        Min profil
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem asChild>
+                      <Link href="/dashboard" className="flex items-center cursor-pointer">
+                        <Home className="h-4 w-4 mr-2" />
                         Dashboard
                       </Link>
                     </DropdownMenuItem>

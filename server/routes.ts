@@ -97,8 +97,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         name: req.user.name,
         email: req.user.email,
         role: req.user.role,
+        profilePictureUrl: req.user.profilePictureUrl,
+        bio: req.user.bio,
       },
     });
+  });
+
+  app.put("/api/auth/profile", authenticateToken, async (req: any, res) => {
+    try {
+      const { name, bio, profilePictureUrl } = req.body;
+      
+      const updatedUser = await storage.updateUser(req.user.id, {
+        name,
+        bio,
+        profilePictureUrl,
+      });
+
+      res.json({
+        user: {
+          id: updatedUser.id,
+          name: updatedUser.name,
+          email: updatedUser.email,
+          role: updatedUser.role,
+          profilePictureUrl: updatedUser.profilePictureUrl,
+          bio: updatedUser.bio,
+        },
+      });
+    } catch (error) {
+      console.error("Update profile error:", error);
+      res.status(400).json({ message: "Failed to update profile" });
+    }
   });
 
   // Property routes

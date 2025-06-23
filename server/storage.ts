@@ -7,6 +7,7 @@ export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  updateUser(id: number, user: Partial<InsertUser>): Promise<User>;
 
   // Property methods
   getProperties(filters?: {
@@ -52,6 +53,15 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  async updateUser(id: number, updateData: Partial<InsertUser>): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set(updateData)
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
   // Property methods
   async getProperties(filters?: {
     location?: string;
@@ -59,22 +69,24 @@ export class DatabaseStorage implements IStorage {
     maxPrice?: number;
     landlordId?: number;
   }): Promise<Property[]> {
-    let query = db.select().from(properties).where(eq(properties.available, true));
+    const conditions = [eq(properties.available, true)];
 
     if (filters?.location) {
-      query = query.where(ilike(properties.address, `%${filters.location}%`));
+      conditions.push(ilike(properties.address, `%${filters.location}%`));
     }
     if (filters?.rooms) {
-      query = query.where(eq(properties.rooms, filters.rooms));
+      conditions.push(eq(properties.rooms, filters.rooms));
     }
     if (filters?.maxPrice) {
-      query = query.where(eq(properties.price, filters.maxPrice.toString()));
+      conditions.push(eq(properties.price, filters.maxPrice.toString()));
     }
     if (filters?.landlordId) {
-      query = query.where(eq(properties.landlordId, filters.landlordId));
+      conditions.push(eq(properties.landlordId, filters.landlordId));
     }
 
-    return await query.orderBy(desc(properties.createdAt));
+    return await db.select().from(properties)
+      .where(and(...conditions))
+      .orderBy(desc(properties.createdAt));
   }
 
   async getProperty(id: number): Promise<Property | undefined> {
@@ -101,27 +113,21 @@ export class DatabaseStorage implements IStorage {
 
   async deleteProperty(id: number): Promise<boolean> {
     const result = await db.delete(properties).where(eq(properties.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Message methods
   async getMessages(userId: number, otherUserId?: number): Promise<Message[]> {
-    let query = db.select().from(messages);
-
-    if (otherUserId) {
-      query = query.where(
-        or(
+    const conditions = otherUserId 
+      ? or(
           and(eq(messages.fromUserId, userId), eq(messages.toUserId, otherUserId)),
           and(eq(messages.fromUserId, otherUserId), eq(messages.toUserId, userId))
         )
-      );
-    } else {
-      query = query.where(
-        or(eq(messages.fromUserId, userId), eq(messages.toUserId, userId))
-      );
-    }
+      : or(eq(messages.fromUserId, userId), eq(messages.toUserId, userId));
 
-    return await query.orderBy(desc(messages.createdAt));
+    return await db.select().from(messages)
+      .where(conditions)
+      .orderBy(desc(messages.createdAt));
   }
 
   async createMessage(insertMessage: InsertMessage): Promise<Message> {
@@ -137,7 +143,7 @@ export class DatabaseStorage implements IStorage {
       .update(messages)
       .set({ read: true })
       .where(eq(messages.id, id));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   // Favorite methods
@@ -170,7 +176,7 @@ export class DatabaseStorage implements IStorage {
     const result = await db
       .delete(favorites)
       .where(and(eq(favorites.userId, userId), eq(favorites.propertyId, propertyId)));
-    return result.rowCount > 0;
+    return (result.rowCount || 0) > 0;
   }
 
   async isFavorite(userId: number, propertyId: number): Promise<boolean> {

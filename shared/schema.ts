@@ -9,6 +9,8 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   role: text("role").notNull(), // 'tenant' or 'landlord'
+  profilePictureUrl: text("profile_picture_url"),
+  bio: text("bio"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -18,6 +20,11 @@ export const properties = pgTable("properties", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   address: text("address").notNull(),
+  postalCode: text("postal_code"),
+  city: text("city"),
+  country: text("country").default("Denmark"),
+  latitude: decimal("latitude", { precision: 10, scale: 8 }),
+  longitude: decimal("longitude", { precision: 11, scale: 8 }),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   rooms: integer("rooms").notNull(),
   size: integer("size").notNull(), // in square meters
